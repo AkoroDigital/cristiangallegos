@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cristian Gallegos Barbershop</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #1a1612;
+      --surface:   #201c17;
+      --surface2:  #252019;
+      --border:    #3a3228;
+      --accent:    #8b1a10;
+      --gold:      #8b1a10;
+      --text:      #f0e8d8;
+      --muted:     #7a6f5e;
+      --cream:     #f5edd8;
+      --ff-head:   'Playfair Display', serif;
+      --ff-body:   'Barlow', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--ff-body);
+      font-weight: 300;
+      font-size: 1.15rem;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 18px,
+        rgba(255,255,255,.012) 18px,
+        rgba(255,255,255,.012) 19px
+      );
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 4rem;
+      background: rgba(20,17,13,.92);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      display: flex; flex-direction: column; line-height: 1; cursor: pointer;
+    }
+    .logo-main {
+      font-family: var(--ff-head);
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: var(--cream);
+      letter-spacing: .04em;
+    }
+    .logo-sub {
+      font-size: .95rem;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-weight: 800;
+    }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links li a {
+      font-size: .88rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color .25s;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .nav-links li a:hover,
+    .nav-links li a.active { color: var(--gold); }
+
+    /* ── POLE ACCENT BAR ── */
+    .pole-bar {
+      height: 4px;
+      background: repeating-linear-gradient(
+        90deg,
+        var(--accent) 0, var(--accent) 12px,
+        #fff 12px, #fff 18px,
+        #1a4a8a 18px, #1a4a8a 30px,
+        #fff 30px, #fff 36px
+      );
+    }
+
+    /* ── PAGE SYSTEM ── */
+    .page { display: none; min-height: 100vh; padding-top: 72px; position: relative; z-index: 1; }
+    .page.active { display: flex; flex-direction: column; }
+
+    /* ── HERO ── */
+    #home {
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 60% 70% at 15% 50%, rgba(139,26,16,.15) 0%, transparent 55%),
+        radial-gradient(ellipse 55% 60% at 85% 40%, rgba(201,168,76,.08) 0%, transparent 55%);
+    }
+    .hero-watermark {
+      position: absolute; right: 6%; bottom: 5%; z-index: 0;
+      opacity: .04;
+      font-size: 22rem;
+      line-height: 1;
+      user-select: none;
+      filter: blur(1px);
+    }
+    .hero-content {
+      position: relative; z-index: 1;
+      text-align: center;
+      padding: 7rem 2rem 5rem;
+      animation: fadeUp .9s ease both;
+    }
+    .hero-badge {
+      display: inline-block;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-size: .65rem;
+      letter-spacing: .3em;
+      text-transform: uppercase;
+      padding: .4rem 1.4rem;
+      margin-bottom: 2rem;
+    }
+    .hero-title {
+      font-family: var(--ff-head);
+      font-size: clamp(4rem, 10vw, 8rem);
+      font-weight: 700;
+      line-height: 1.0;
+      letter-spacing: -.01em;
+      margin-bottom: .4rem;
+    }
+    .hero-title em {
+      font-style: italic;
+      display: block;
+    }
+    .hero-rule {
+      width: 50px; height: 2px;
+      background: var(--accent);
+      margin: 1.8rem auto;
+    }
+    .hero-sub {
+      font-size: 1.2rem;
+      color: var(--muted);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .hero-cta {
+      margin-top: 2.8rem;
+      display: inline-block;
+      padding: 1.1rem 3.2rem;
+      background: var(--accent);
+      color: #fff;
+      font-family: var(--ff-body);
+      font-size: .95rem;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .25s, transform .2s;
+      border: none;
+    }
+    .hero-cta:hover { background: #6b1208; transform: translateY(-2px); }
+
+    /* ── SECTION WRAPPER ── */
+    .section-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 7rem 2rem;
+      width: 100%;
+    }
+    .section-tag {
+      font-size: 1rem;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+    .section-title {
+      font-family: var(--ff-head);
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--cream);
+    }
+    .section-title em { font-style: italic; color: var(--accent); font-weight: 400; }
+
+    /* ── ABOUT ── */
+    #about { background: var(--surface); }
+    .about-header { margin-bottom: 5rem; }
+    .about-header p.about-intro {
+      margin-top: 1.8rem;
+      max-width: 640px;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.8;
+      font-weight: 300;
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+    .about-card {
+      background: var(--surface2);
+      padding: 3rem 2.5rem;
+      transition: background .3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .about-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transition: transform .3s;
+      transform-origin: left;
+    }
+    .about-card:hover { background: rgba(139,26,16,.09); }
+    .about-card:hover::before { transform: scaleX(1); }
+    .about-card-icon {
+      font-size: 2.2rem;
+      margin-bottom: 1.5rem;
+      display: block;
+    }
+    .about-card-heading {
+      font-family: var(--ff-head);
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: var(--cream);
+      margin-bottom: 1rem;
+    }
+    .about-card p {
+      color: var(--muted);
+      font-size: .95rem;
+      line-height: 1.75;
+      font-weight: 300;
+    }
+
+    /* ── SERVICES ── */
+    .services-heading-wrap { margin-bottom: 5rem; }
+    .services-list {
+      display: flex; flex-direction: column;
+      border-top: 1px solid var(--border);
+    }
+    .service-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 2.2rem 0;
+      border-bottom: 1px solid var(--border);
+      cursor: default;
+      transition: padding-left .3s, background .3s;
+      padding-left: 0;
+      gap: 2rem;
+    }
+    .service-row:hover { padding-left: 1.2rem; background: rgba(192,57,43,.04); }
+    .service-row:hover .service-num { color: var(--accent); }
+    .service-left { display: flex; align-items: flex-start; gap: 2rem; flex: 1; }
+    .service-num {
+      font-family: var(--ff-head);
+      font-size: .85rem;
+      color: var(--muted);
+      width: 2.5rem;
+      flex-shrink: 0;
+      padding-top: .4rem;
+      transition: color .3s;
+    }
+    .service-icon { font-size: 1.4rem; width: 2rem; text-align: center; flex-shrink: 0; padding-top: .2rem; }
+    .service-text { display: flex; flex-direction: column; gap: .4rem; }
+    .service-name {
+      font-family: var(--ff-head);
+      font-size: clamp(1.4rem, 3vw, 2.1rem);
+      font-weight: 400;
+      color: var(--cream);
+      line-height: 1.1;
+    }
+    .service-desc {
+      font-size: .85rem;
+      color: var(--muted);
+      font-weight: 300;
+      line-height: 1.6;
+      max-width: 480px;
+    }
+    .service-tag {
+      font-size: .65rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: .3rem .9rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+      align-self: flex-start;
+      margin-top: .3rem;
+    }
+
+    /* ── CONTACT ── */
+    #contact { background: var(--surface); }
+    .contact-layout {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 6rem;
+      align-items: start;
+    }
+    .contact-details { margin-top: 4rem; }
+    .contact-detail-item {
+      padding: 1.4rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .contact-detail-label {
+      font-size: .62rem;
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: .4rem;
+    }
+    .contact-detail-value {
+      font-family: var(--ff-head);
+      font-size: 1.3rem;
+      color: var(--text);
+    }
+    .contact-form { display: flex; flex-direction: column; gap: 1.5rem; }
+    .form-group { display: flex; flex-direction: column; gap: .5rem; }
+    .form-label {
+      font-size: .65rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .form-input, .form-textarea, .form-select {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--ff-body);
+      font-size: .95rem;
+      padding: .8rem 0;
+      outline: none;
+      transition: border-color .25s;
+      width: 100%;
+    }
+    .form-select {
+      background: var(--surface2);
+      padding: .8rem .5rem;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .form-select option { background: var(--surface2); color: var(--text); }
+    .form-input:focus, .form-textarea:focus, .form-select:focus { border-color: var(--accent); }
+    .form-textarea { resize: none; height: 100px; }
+    .form-submit {
+      align-self: flex-start;
+      margin-top: .5rem;
+      padding: .9rem 2.8rem;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      font-family: var(--ff-body);
+      font-size: .75rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background .25s, transform .2s;
+    }
+    .form-submit:hover { background: #a93226; transform: translateY(-2px); }
+
+    /* ── SCHEDULING PAGE ── */
+    #schedule { background: var(--bg); }
+    .schedule-layout {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 5rem;
+      align-items: start;
+    }
+    .schedule-info-block { position: sticky; top: 100px; }
+    .schedule-hours-grid {
+      margin-top: 2.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 1px solid var(--border);
+    }
+    .schedule-day-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      transition: background .2s;
+    }
+    .schedule-day-row:last-child { border-bottom: none; }
+    .schedule-day-row.open:hover { background: rgba(139,26,16,.07); }
+    .schedule-day-row.closed { opacity: .45; }
+    .schedule-day-row.private { background: rgba(139,26,16,.06); }
+    .sched-day {
+      font-size: .8rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .sched-day.today { color: var(--cream); font-weight: 600; }
+    .sched-hours {
+      font-family: var(--ff-head);
+      font-size: 1rem;
+      color: var(--cream);
+    }
+    .sched-badge {
+      font-size: .55rem;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      padding: .25rem .65rem;
+      border: 1px solid;
+    }
+    .sched-badge.open { color: #5cb85c; border-color: #5cb85c; }
+    .sched-badge.private-badge { color: var(--gold); border-color: var(--gold); }
+    .sched-badge.closed { color: var(--muted); border-color: var(--border); }
+
+    /* Booking form */
+    .booking-form {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 3rem;
+    }
+    .booking-form-title {
+      font-family: var(--ff-head);
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--cream);
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .booking-form .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    .booking-form .form-group { margin-bottom: 1.5rem; }
+    .booking-form .form-group:last-of-type { margin-bottom: 0; }
+
+    .select-wrapper {
+      position: relative;
+    }
+    .select-wrapper::after {
+      content: '▾';
+      position: absolute;
+      right: .8rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+      font-size: .8rem;
+    }
+    .select-wrapper .form-select { padding-right: 2.5rem; }
+
+    .time-slots {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: .6rem;
+      margin-top: .5rem;
+    }
+    .time-slot {
+      padding: .55rem .4rem;
+      border: 1px solid var(--border);
+      text-align: center;
+      font-size: .72rem;
+      letter-spacing: .08em;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .2s;
+      background: transparent;
+      font-family: var(--ff-body);
+    }
+    .time-slot:hover { border-color: var(--accent); color: var(--cream); }
+    .time-slot.selected { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .time-slot.unavailable {
+      opacity: .3;
+      cursor: not-allowed;
+      pointer-events: none;
+      text-decoration: line-through;
+    }
+    .time-slot-note {
+      font-size: .72rem;
+      color: var(--muted);
+      margin-top: .7rem;
+      letter-spacing: .05em;
+    }
+
+    /* Calendar strip */
+    .calendar-strip {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: .5rem;
+      margin-top: .5rem;
+    }
+    .cal-day {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: .8rem .3rem;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all .2s;
+      background: transparent;
+      font-family: var(--ff-body);
+    }
+    .cal-day:hover:not(.cal-day--disabled) { border-color: var(--accent); background: rgba(139,26,16,.08); }
+    .cal-day.selected { background: var(--accent); border-color: var(--accent); }
+    .cal-day.selected .cal-day-num,
+    .cal-day.selected .cal-day-name { color: #fff; }
+    .cal-day--disabled { opacity: .3; cursor: not-allowed; pointer-events: none; }
+    .cal-day-name {
+      font-size: .55rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: .3rem;
+    }
+    .cal-day-num {
+      font-family: var(--ff-head);
+      font-size: 1.1rem;
+      color: var(--cream);
+    }
+    .cal-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: .8rem;
+    }
+    .cal-nav-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: .3rem .8rem;
+      cursor: pointer;
+      font-size: .85rem;
+      transition: all .2s;
+      font-family: var(--ff-body);
+    }
+    .cal-nav-btn:hover { border-color: var(--accent); color: var(--cream); }
+    .cal-month-label {
+      font-family: var(--ff-head);
+      font-size: 1rem;
+      color: var(--cream);
+      letter-spacing: .05em;
+    }
+
+    /* private notice */
+    .private-notice {
+      background: rgba(139,26,16,.12);
+      border: 1px solid rgba(139,26,16,.35);
+      padding: 1rem 1.4rem;
+      margin-top: 1rem;
+      font-size: .8rem;
+      color: var(--gold);
+      letter-spacing: .05em;
+      line-height: 1.6;
+      display: none;
+    }
+
+    /* confirmation */
+    .booking-confirmation {
+      display: none;
+      text-align: center;
+      padding: 4rem 2rem;
+    }
+    .booking-confirmation .confirm-icon {
+      font-size: 3.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .booking-confirmation h2 {
+      font-family: var(--ff-head);
+      font-size: 2.2rem;
+      color: var(--cream);
+      margin-bottom: 1rem;
+    }
+    .booking-confirmation p {
+      color: var(--muted);
+      font-size: .95rem;
+      line-height: 1.7;
+    }
+    .booking-confirmation .confirm-detail {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      border: 1px solid var(--border);
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      gap: .8rem;
+    }
+    .confirm-row {
+      display: flex;
+      gap: 1rem;
+      align-items: baseline;
+    }
+    .confirm-label {
+      font-size: .62rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      min-width: 80px;
+    }
+    .confirm-value {
+      font-family: var(--ff-head);
+      color: var(--cream);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1.8rem 4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-logo {
+      font-family: var(--ff-head);
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--cream);
+    }
+    .footer-copy {
+      font-size: .95rem;
+      color: var(--muted);
+      letter-spacing: .1em;
+    }
+
+    @keyframes textGlow {
+      0%   { text-shadow: 0 0 8px rgba(220,50,30,.9), 0 0 20px rgba(220,50,30,.7), 0 0 45px rgba(220,50,30,.5), 0 0 80px rgba(220,50,30,.3); color: #f5edd8; }
+      4%   { text-shadow: none; color: #9a7a6a; }
+      6%   { text-shadow: 0 0 8px rgba(220,50,30,.9), 0 0 20px rgba(220,50,30,.7), 0 0 45px rgba(220,50,30,.5), 0 0 80px rgba(220,50,30,.3); color: #f5edd8; }
+      30%  { text-shadow: 0 0 8px rgba(220,50,30,.9), 0 0 20px rgba(220,50,30,.7), 0 0 45px rgba(220,50,30,.5), 0 0 80px rgba(220,50,30,.3); color: #f5edd8; }
+      31%  { text-shadow: none; color: #9a7a6a; }
+      32%  { text-shadow: 0 0 8px rgba(220,50,30,.9), 0 0 20px rgba(220,50,30,.7), 0 0 45px rgba(220,50,30,.5), 0 0 80px rgba(220,50,30,.3); color: #f5edd8; }
+      57%  { text-shadow: 0 0 8px rgba(220,50,30,.9), 0 0 20px rgba(220,50,30,.7), 0 0 45px rgba(220,50,30,.5), 0 0 80px rgba(220,50,30,.3); color: #f5edd8; }
+      58%  { text-shadow: none; color: #9a7a6a; }
+      59%  { text-shadow: none; color: #9a7a6a; }
+      61%  { text-shadow: 0 0 8px rgba(220,50,30,.9), 0 0 20px rgba(220,50,30,.7), 0 0 45px rgba(220,50,30,.5), 0 0 80px rgba(220,50,30,.3); color: #f5edd8; }
+      100% { text-shadow: 0 0 8px rgba(220,50,30,.9), 0 0 20px rgba(220,50,30,.7), 0 0 45px rgba(220,50,30,.5), 0 0 80px rgba(220,50,30,.3); color: #f5edd8; }
+    }
+    @keyframes textGlowItalic {
+      0%   { text-shadow: 0 0 10px rgba(220,50,30,1), 0 0 25px rgba(220,50,30,.8), 0 0 55px rgba(220,50,30,.6), 0 0 100px rgba(220,50,30,.35); color: #e05040; }
+      4%   { text-shadow: none; color: #5a1a10; }
+      6%   { text-shadow: 0 0 10px rgba(220,50,30,1), 0 0 25px rgba(220,50,30,.8), 0 0 55px rgba(220,50,30,.6), 0 0 100px rgba(220,50,30,.35); color: #e05040; }
+      30%  { text-shadow: 0 0 10px rgba(220,50,30,1), 0 0 25px rgba(220,50,30,.8), 0 0 55px rgba(220,50,30,.6), 0 0 100px rgba(220,50,30,.35); color: #e05040; }
+      31%  { text-shadow: none; color: #5a1a10; }
+      32%  { text-shadow: 0 0 10px rgba(220,50,30,1), 0 0 25px rgba(220,50,30,.8), 0 0 55px rgba(220,50,30,.6), 0 0 100px rgba(220,50,30,.35); color: #e05040; }
+      57%  { text-shadow: 0 0 10px rgba(220,50,30,1), 0 0 25px rgba(220,50,30,.8), 0 0 55px rgba(220,50,30,.6), 0 0 100px rgba(220,50,30,.35); color: #e05040; }
+      58%  { text-shadow: none; color: #5a1a10; }
+      59%  { text-shadow: none; color: #5a1a10; }
+      61%  { text-shadow: 0 0 10px rgba(220,50,30,1), 0 0 25px rgba(220,50,30,.8), 0 0 55px rgba(220,50,30,.6), 0 0 100px rgba(220,50,30,.35); color: #e05040; }
+      100% { text-shadow: 0 0 10px rgba(220,50,30,1), 0 0 25px rgba(220,50,30,.8), 0 0 55px rgba(220,50,30,.6), 0 0 100px rgba(220,50,30,.35); color: #e05040; }
+    }
+    .hero-title {
+      text-shadow: 0 0 8px rgba(220,50,30,.9), 0 0 20px rgba(220,50,30,.7), 0 0 45px rgba(220,50,30,.5), 0 0 80px rgba(220,50,30,.3);
+      color: #f5edd8;
+      animation: textGlow 5s infinite;
+    }
+    .hero-title em {
+      text-shadow: 0 0 10px rgba(220,50,30,1), 0 0 25px rgba(220,50,30,.8), 0 0 55px rgba(220,50,30,.6), 0 0 100px rgba(220,50,30,.35);
+      color: #e05040;
+      animation: textGlowItalic 5s 0.3s infinite;
+    }
+    .hero-title-box {
+      display: inline-block;
+      border: 2px solid #d93a28;
+      padding: 1.2rem 2.4rem;
+      margin-bottom: .4rem;
+      box-shadow: 0 0 6px rgba(200,40,20,.95), 0 0 20px rgba(200,40,20,.85), 0 0 50px rgba(200,40,20,.6), 0 0 100px rgba(200,40,20,.4), 0 0 160px rgba(200,40,20,.2), inset 0 0 30px rgba(200,40,20,.12);
+    }
+
+    .about-card-img {
+      background: var(--surface2);
+      padding: 3rem 2.5rem;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 220px;
+    }
+    .about-card-img::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--accent);
+      transform: scaleX(0);
+      transition: transform .3s;
+      transform-origin: left;
+    }
+    .about-card-img:hover::before { transform: scaleX(1); }
+    .img-placeholder {
+      width: 100%; aspect-ratio: 4/3;
+      background: var(--border);
+      border: 2px dashed #4a3f32;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: .6rem;
+      color: var(--muted);
+      font-size: .7rem;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+    }
+    .img-placeholder-icon { font-size: 2rem; opacity: .5; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .schedule-layout { grid-template-columns: 1fr; gap: 3rem; }
+      .schedule-info-block { position: static; }
+    }
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { gap: 1.2rem; }
+      .nav-links li a { font-size: .75rem; letter-spacing: .1em; }
+      .about-grid { grid-template-columns: 1fr; }
+      .contact-layout { grid-template-columns: 1fr; gap: 3rem; }
+      .booking-form .form-row { grid-template-columns: 1fr; }
+      .time-slots { grid-template-columns: repeat(3, 1fr); }
+      footer { flex-direction: column; gap: 1rem; text-align: center; padding: 1.8rem 1.5rem; }
+      .booking-form { padding: 2rem 1.5rem; }
+    }
+    @media (max-width: 480px) {
+      .nav-links { gap: .8rem; }
+      .calendar-strip { grid-template-columns: repeat(7, 1fr); gap: .3rem; }
+      .time-slots { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="logo" onclick="showPage('home')">
+      <span class="logo-main">Cristian Gallegos</span>
+      <span class="logo-sub">Elite Barber</span>
+    </div>
+    <ul class="nav-links">
+      <li><a onclick="showPage('home')" data-page="home">Home</a></li>
+      <li><a onclick="showPage('about')" data-page="about">About Me</a></li>
+      <li><a onclick="showPage('services')" data-page="services">Services</a></li>
+      <li><a onclick="showPage('schedule')" data-page="schedule">Book Now</a></li>
+      <li><a onclick="showPage('contact')" data-page="contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- ══ HOME ══ -->
+  <div id="home" class="page active">
+    <div class="pole-bar"></div>
+    <div class="hero-bg"></div>
+    <div class="hero-watermark">✂</div>
+    <div class="hero-content">
+      <div class="hero-title-box">
+        <h1 class="hero-title">
+          Look Sharp.<br>
+          <em>Feel Sharp.</em>
+        </h1>
+      </div>
+      <div class="hero-rule"></div>
+      <p class="hero-sub">Cuts &nbsp;·&nbsp; Fades &nbsp;·&nbsp; Shaves &nbsp;·&nbsp; Grooming</p>
+      <a class="hero-cta" onclick="showPage('schedule')">Book an Appointment</a>
+    </div>
+  </div>
+
+  <!-- ══ ABOUT ══ -->
+  <div id="about" class="page">
+    <div class="pole-bar"></div>
+    <div class="section-inner">
+      <div class="about-header reveal">
+        <p class="section-tag">Who I Am</p>
+        <h1 class="section-title">More Than a <em>Haircut</em></h1>
+        <p class="about-intro">
+          My name is Cristian, and I'm a barber based in New York. I got into barbering because I've always been drawn to the culture: the community, the craft, and the way a great cut can genuinely change how someone carries themselves. Every client who sits in my chair deserves a clean, precise cut and a comfortable experience from start to finish.
+        </p>
+      </div>
+      <div class="about-grid">
+        <div class="about-card-img reveal">
+          <div class="img-placeholder">
+            <span class="img-placeholder-icon">🖼️</span>
+            <span>Image Coming Soon</span>
+          </div>
+        </div>
+        <div class="about-card reveal">
+          <span class="about-card-icon">🪒</span>
+          <h2 class="about-card-heading">My Story</h2>
+          <p>
+            I started cutting because barber culture spoke to me — the tradition, the skill, and the confidence it gives people walking out the door. What began as a passion quickly became a craft I take seriously every single day. I'm always learning, always refining, and always pushing to be better for the people who trust me with their look.
+          </p>
+        </div>
+        <div class="about-card reveal">
+          <span class="about-card-icon">💈</span>
+          <h2 class="about-card-heading">My Promise</h2>
+          <p>
+            I keep my work clean and make sure every client has a good experience — not just a good cut. Whether it's your first time in my chair or you've been coming for years, I want you leaving with a cut you actually feel great about. No rushed appointments, no half-measures. Just solid work and real attention to detail.
+          </p>
+        </div>
+      </div>
+    </div>
+    <footer>
+      <span class="footer-logo">Look Sharp. <em style="font-style:italic; color:var(--accent);">Feel Sharp.</em></span>
+      <span class="footer-copy">&copy; 2026 Cristian Gallegos. All rights reserved.</span>
+    </footer>
+  </div>
+
+  <!-- ══ SERVICES ══ -->
+  <div id="services" class="page">
+    <div class="pole-bar"></div>
+    <div class="section-inner">
+      <div class="services-heading-wrap reveal">
+        <p class="section-tag">What I Offer</p>
+        <h1 class="section-title">My <em>Services</em></h1>
+      </div>
+      <div class="services-list">
+        <div class="service-row reveal">
+          <div class="service-left">
+            <span class="service-num">01</span>
+            <span class="service-icon">✂️</span>
+            <div class="service-text">
+              <span class="service-name">Classic Haircut</span>
+              <span class="service-desc">A timeless cut tailored to your head shape and style. Includes a detailed line-up, clean edges, and a finish that looks sharp whether you're at work or out for the night.</span>
+            </div>
+          </div>
+          <span class="service-tag">Signature</span>
+        </div>
+        <div class="service-row reveal">
+          <div class="service-left">
+            <span class="service-num">02</span>
+            <span class="service-icon">⚡</span>
+            <div class="service-text">
+              <span class="service-name">Fade &amp; Taper</span>
+              <span class="service-desc">Clean, seamless blending from skin to length. Whether you want a low, mid, or high fade, every transition is dialed in with precision for a polished, modern look.</span>
+            </div>
+          </div>
+          <span class="service-tag">Popular</span>
+        </div>
+        <div class="service-row reveal">
+          <div class="service-left">
+            <span class="service-num">03</span>
+            <span class="service-icon">🪒</span>
+            <div class="service-text">
+              <span class="service-name">Hot Towel Shave</span>
+              <span class="service-desc">A classic straight-razor shave with a warm towel prep to open the pores and soften the skin. Smooth, close, and relaxing. The full old-school barbershop experience.</span>
+            </div>
+          </div>
+          <span class="service-tag">Premium</span>
+        </div>
+        <div class="service-row reveal">
+          <div class="service-left">
+            <span class="service-num">04</span>
+            <span class="service-icon">🧔</span>
+            <div class="service-text">
+              <span class="service-name">Beard Trim &amp; Shape</span>
+              <span class="service-desc">Clean up your beard or build a style from scratch. Lines are crisp, edges are razor-sharp, and the shape is dialed in to suit your face. Pairs great with any haircut.</span>
+            </div>
+          </div>
+          <span class="service-tag">Grooming</span>
+        </div>
+        <div class="service-row reveal">
+          <div class="service-left">
+            <span class="service-num">05</span>
+            <span class="service-icon">👦</span>
+            <div class="service-text">
+              <span class="service-name">Kids' Cut</span>
+              <span class="service-desc">A patient, comfortable experience for the little ones. Fun cuts, clean lines, and a relaxed chair for kids who are new to the barbershop or already know exactly what they want.</span>
+            </div>
+          </div>
+          <span class="service-tag">Family</span>
+        </div>
+      </div>
+    </div>
+    <footer>
+      <span class="footer-logo">Look Sharp. <em style="font-style:italic; color:var(--accent);">Feel Sharp.</em></span>
+      <span class="footer-copy">&copy; 2026 Cristian Gallegos. All rights reserved.</span>
+    </footer>
+  </div>
+
+  <!-- ══ SCHEDULE ══ -->
+  <div id="schedule" class="page">
+    <div class="pole-bar"></div>
+    <div class="section-inner">
+      <div class="schedule-layout">
+
+        <!-- LEFT: Info -->
+        <div class="schedule-info-block reveal">
+          <p class="section-tag">Availability</p>
+          <h1 class="section-title">Book Your <em>Session</em></h1>
+          <p style="margin-top:1.5rem; color:var(--muted); font-size:.95rem; line-height:1.8;">
+            Select your preferred date and time, choose your service, and fill in your information. Cristian will confirm your appointment.
+          </p>
+
+          <div class="schedule-hours-grid" style="margin-top:2.5rem;">
+            <div class="schedule-day-row closed">
+              <span class="sched-day">Monday</span>
+              <span class="sched-badge private-badge">Private Only</span>
+            </div>
+            <div class="schedule-day-row open">
+              <span class="sched-day">Tuesday</span>
+              <span class="sched-hours">2:00 PM – 7:00 PM</span>
+              <span class="sched-badge open">Open</span>
+            </div>
+            <div class="schedule-day-row open">
+              <span class="sched-day">Wednesday</span>
+              <span class="sched-hours">2:00 PM – 7:00 PM</span>
+              <span class="sched-badge open">Open</span>
+            </div>
+            <div class="schedule-day-row open">
+              <span class="sched-day">Thursday</span>
+              <span class="sched-hours">2:00 PM – 7:00 PM</span>
+              <span class="sched-badge open">Open</span>
+            </div>
+            <div class="schedule-day-row open">
+              <span class="sched-day">Friday</span>
+              <span class="sched-hours">2:00 PM – 7:00 PM</span>
+              <span class="sched-badge open">Open</span>
+            </div>
+            <div class="schedule-day-row open">
+              <span class="sched-day">Saturday</span>
+              <span class="sched-hours">9:00 AM – 7:00 PM</span>
+              <span class="sched-badge open">Open</span>
+            </div>
+            <div class="schedule-day-row closed">
+              <span class="sched-day">Sunday</span>
+              <span class="sched-badge private-badge">Private Only</span>
+            </div>
+          </div>
+
+          <p style="margin-top:1rem; font-size:.72rem; color:var(--muted); letter-spacing:.05em; line-height:1.6;">
+            <strong style="color:var(--gold);">Private appointments</strong> (Sunday & Monday) are available by request. Use the form and mention your preferred time — Cristian will reach out to confirm.
+          </p>
+        </div>
+
+        <!-- RIGHT: Booking Form -->
+        <div class="booking-form reveal" id="bookingFormWrap">
+          <p class="booking-form-title">Reserve Your Spot</p>
+
+          <div id="bookingFormContent">
+            <!-- Row 1: Name / Phone -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">First Name *</label>
+                <input class="form-input" id="bf-fname" type="text" placeholder="John" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Last Name *</label>
+                <input class="form-input" id="bf-lname" type="text" placeholder="Smith" required />
+              </div>
+            </div>
+
+            <!-- Row 2: Phone / Email -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Phone Number *</label>
+                <input class="form-input" id="bf-phone" type="tel" placeholder="+1 (555) 000-0000" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Email</label>
+                <input class="form-input" id="bf-email" type="email" placeholder="john@email.com" />
+              </div>
+            </div>
+
+            <!-- Service -->
+            <div class="form-group">
+              <label class="form-label">Service *</label>
+              <div class="select-wrapper">
+                <select class="form-select" id="bf-service" required>
+                  <option value="" disabled selected>Select a service…</option>
+                  <option value="Classic Haircut">Classic Haircut</option>
+                  <option value="Fade & Taper">Fade &amp; Taper</option>
+                  <option value="Hot Towel Shave">Hot Towel Shave</option>
+                  <option value="Beard Trim & Shape">Beard Trim &amp; Shape</option>
+                  <option value="Kids' Cut">Kids' Cut</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Date picker -->
+            <div class="form-group">
+              <label class="form-label">Select Date *</label>
+              <div class="cal-nav">
+                <button class="cal-nav-btn" id="calPrev">&#8592;</button>
+                <span class="cal-month-label" id="calMonthLabel"></span>
+                <button class="cal-nav-btn" id="calNext">&#8594;</button>
+              </div>
+              <div class="calendar-strip" id="calendarStrip"></div>
+              <div class="private-notice" id="privateNotice">
+                ✦ Sunday &amp; Monday are private appointment days. Submit your request and Cristian will contact you directly to confirm your time.
+              </div>
+            </div>
+
+            <!-- Time slots -->
+            <div class="form-group" id="timeSlotsGroup" style="display:none;">
+              <label class="form-label">Select Time *</label>
+              <div class="time-slots" id="timeSlots"></div>
+              <p class="time-slot-note" id="timeSlotNote"></p>
+            </div>
+
+            <!-- Notes -->
+            <div class="form-group">
+              <label class="form-label">Additional Notes</label>
+              <textarea class="form-textarea" id="bf-notes" placeholder="Any special requests or style references…"></textarea>
+            </div>
+
+            <p id="bf-error" style="color:#e74c3c; font-size:.8rem; letter-spacing:.05em; display:none; margin-top:.5rem;"></p>
+
+            <button class="form-submit" onclick="submitBooking()">Confirm Appointment</button>
+          </div>
+
+          <!-- Confirmation screen -->
+          <div class="booking-confirmation" id="bookingConfirmation">
+            <div class="confirm-icon">💈</div>
+            <h2>You're Booked!</h2>
+            <p>Thanks for reaching out. Cristian will confirm your appointment shortly.</p>
+            <div class="confirm-detail" id="confirmDetail"></div>
+            <button class="form-submit" style="margin: 2rem auto 0; display:block;" onclick="resetBooking()">Book Another Appointment</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <footer>
+      <span class="footer-logo">Look Sharp. <em style="font-style:italic; color:var(--accent);">Feel Sharp.</em></span>
+      <span class="footer-copy">&copy; 2026 Cristian Gallegos. All rights reserved.</span>
+    </footer>
+  </div>
+
+  <!-- ══ CONTACT ══ -->
+  <div id="contact" class="page">
+    <div class="pole-bar"></div>
+    <div class="section-inner">
+      <div class="contact-layout">
+        <div class="contact-left reveal">
+          <p class="section-tag">Get in Touch</p>
+          <h1 class="section-title">Come In &amp; <em>Get Fresh</em></h1>
+          <p style="margin-top:1.5rem; color:var(--muted); font-size:.95rem; line-height:1.8;">
+            Have a question or want to reach out directly? Drop a message below and Cristian will get back to you as soon as possible.
+          </p>
+          <div class="contact-details">
+            <div class="contact-detail-item">
+              <p class="contact-detail-label">Phone</p>
+              <p class="contact-detail-value">(845) 779-3441</p>
+            </div>
+            <div class="contact-detail-item">
+              <p class="contact-detail-label">Email</p>
+              <p class="contact-detail-value">book@cristiangallegos.com</p>
+            </div>
+            <div class="contact-detail-item">
+              <p class="contact-detail-label">Location</p>
+              <p class="contact-detail-value">Wappingers Falls, NY</p>
+            </div>
+            <div class="contact-detail-item">
+              <p class="contact-detail-label">Hours</p>
+              <p class="contact-detail-value">Tue – Fri: 2pm – 7pm</p>
+              <p class="contact-detail-value" style="font-size:1rem; margin-top:.2rem;">Sat: 9am – 7pm</p>
+            </div>
+          </div>
+        </div>
+        <div class="contact-form reveal">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input class="form-input" type="text" placeholder="John Smith"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            <input class="form-input" type="tel" placeholder="+1 (555) 000-0000"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Preferred Service</label>
+            <input class="form-input" type="text" placeholder="e.g. Fade & Taper"/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Message</label>
+            <textarea class="form-textarea" placeholder="Preferred date, time, or any special requests…"></textarea>
+          </div>
+          <button class="form-submit">Send Message</button>
+        </div>
+      </div>
+    </div>
+    <footer>
+      <span class="footer-logo">Look Sharp. <em style="font-style:italic; color:var(--accent);">Feel Sharp.</em></span>
+      <span class="footer-copy">&copy; 2026 Cristian Gallegos. All rights reserved.</span>
+    </footer>
+  </div>
+
+  <script>
+    /* ── PAGE NAV ── */
+    function showPage(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.querySelectorAll('.nav-links a').forEach(a => {
+        a.classList.toggle('active', a.dataset.page === id);
+      });
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      triggerReveals();
+      if (id === 'schedule') initCalendar();
+    }
+
+    function triggerReveals() {
+      setTimeout(() => {
+        document.querySelectorAll('.page.active .reveal').forEach((el, i) => {
+          setTimeout(() => el.classList.add('visible'), i * 130);
+        });
+      }, 50);
+    }
+
+    document.querySelector('[data-page="home"]').classList.add('active');
+    triggerReveals();
+
+    /* ── CALENDAR & SCHEDULING ── */
+    const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    // 0=Sun,1=Mon,2=Tue,3=Wed,4=Thu,5=Fri,6=Sat
+    // Open: Tue-Fri 2-7pm, Sat 9am-7pm, Sun/Mon private only
+    const SCHEDULE = {
+      0: { type: 'private' },  // Sunday
+      1: { type: 'private' },  // Monday
+      2: { type: 'open', start: 14, end: 19 }, // Tuesday
+      3: { type: 'open', start: 14, end: 19 }, // Wednesday
+      4: { type: 'open', start: 14, end: 19 }, // Thursday
+      5: { type: 'open', start: 14, end: 19 }, // Friday
+      6: { type: 'open', start: 9,  end: 19 }, // Saturday
+    };
+
+    let calYear, calMonth, selectedDate = null, selectedTime = null;
+
+    function initCalendar() {
+      const now = new Date();
+      calYear = now.getFullYear();
+      calMonth = now.getMonth();
+      renderCalendar();
+      document.getElementById('calPrev').onclick = () => {
+        calMonth--;
+        if (calMonth < 0) { calMonth = 11; calYear--; }
+        renderCalendar();
+      };
+      document.getElementById('calNext').onclick = () => {
+        calMonth++;
+        if (calMonth > 11) { calMonth = 0; calYear++; }
+        renderCalendar();
+      };
+    }
+
+    function renderCalendar() {
+      document.getElementById('calMonthLabel').textContent = MONTHS[calMonth] + ' ' + calYear;
+      const strip = document.getElementById('calendarStrip');
+      strip.innerHTML = '';
+
+      const today = new Date();
+      today.setHours(0,0,0,0);
+
+      // Show 14 upcoming days starting from today if in current month, otherwise from 1st
+      const startDate = new Date(calYear, calMonth, 1);
+      const endDate = new Date(calYear, calMonth + 1, 0);
+
+      for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        const clone = new Date(d);
+        const dow = clone.getDay();
+        const isPast = clone < today;
+        const sched = SCHEDULE[dow];
+
+        const btn = document.createElement('button');
+        btn.className = 'cal-day';
+        if (isPast) btn.classList.add('cal-day--disabled');
+
+        btn.innerHTML = `<span class="cal-day-name">${DAYS[dow]}</span><span class="cal-day-num">${clone.getDate()}</span>`;
+
+        if (!isPast) {
+          btn.addEventListener('click', () => selectDate(clone, sched, btn));
+        }
+
+        strip.appendChild(btn);
+      }
+
+      // If previously selected date was in this month, re-highlight
+      if (selectedDate && selectedDate.getMonth() === calMonth && selectedDate.getFullYear() === calYear) {
+        const btns = strip.querySelectorAll('.cal-day');
+        btns.forEach(b => {
+          if (parseInt(b.querySelector('.cal-day-num').textContent) === selectedDate.getDate()) {
+            b.classList.add('selected');
+          }
+        });
+      }
+    }
+
+    function selectDate(date, sched, btn) {
+      // Deselect all
+      document.querySelectorAll('.cal-day').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedDate = new Date(date);
+      selectedTime = null;
+
+      const notice = document.getElementById('privateNotice');
+      const timeSlotsGroup = document.getElementById('timeSlotsGroup');
+
+      if (sched.type === 'private') {
+        notice.style.display = 'block';
+        timeSlotsGroup.style.display = 'none';
+      } else {
+        notice.style.display = 'none';
+        timeSlotsGroup.style.display = 'block';
+        renderTimeSlots(sched.start, sched.end);
+      }
+    }
+
+    function renderTimeSlots(startHour, endHour) {
+      const container = document.getElementById('timeSlots');
+      const note = document.getElementById('timeSlotNote');
+      container.innerHTML = '';
+      selectedTime = null;
+
+      for (let h = startHour; h < endHour; h++) {
+        for (let m = 0; m < 60; m += 30) {
+          const label = formatTime(h, m);
+          const btn = document.createElement('button');
+          btn.className = 'time-slot';
+          btn.textContent = label;
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.time-slot').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedTime = label;
+          });
+          container.appendChild(btn);
+        }
+      }
+
+      const totalSlots = (endHour - startHour) * 2;
+      note.textContent = `${totalSlots} slots available · Each appointment is approximately 30 minutes`;
+    }
+
+    function formatTime(h, m) {
+      const suffix = h >= 12 ? 'PM' : 'AM';
+      const disp = h > 12 ? h - 12 : h === 0 ? 12 : h;
+      return `${disp}:${m === 0 ? '00' : m} ${suffix}`;
+    }
+
+    /* ── FORM SUBMISSION ── */
+    function submitBooking() {
+      const fname = document.getElementById('bf-fname').value.trim();
+      const lname = document.getElementById('bf-lname').value.trim();
+      const phone = document.getElementById('bf-phone').value.trim();
+      const service = document.getElementById('bf-service').value;
+      const errEl = document.getElementById('bf-error');
+
+      errEl.style.display = 'none';
+
+      if (!fname) { showError('Please enter your first name.'); return; }
+      if (!lname) { showError('Please enter your last name.'); return; }
+      if (!phone) { showError('Please enter your phone number.'); return; }
+      if (!service) { showError('Please select a service.'); return; }
+      if (!selectedDate) { showError('Please select a date.'); return; }
+
+      const sched = SCHEDULE[selectedDate.getDay()];
+      if (sched.type === 'open' && !selectedTime) {
+        showError('Please select a time slot.'); return;
+      }
+
+      // Build confirmation
+      const dateStr = selectedDate.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+      const timeStr = selectedTime || 'Private appointment — Cristian will confirm your time';
+
+      const detail = document.getElementById('confirmDetail');
+      detail.innerHTML = `
+        <div class="confirm-row"><span class="confirm-label">Name</span><span class="confirm-value">${fname} ${lname}</span></div>
+        <div class="confirm-row"><span class="confirm-label">Phone</span><span class="confirm-value">${phone}</span></div>
+        <div class="confirm-row"><span class="confirm-label">Service</span><span class="confirm-value">${service}</span></div>
+        <div class="confirm-row"><span class="confirm-label">Date</span><span class="confirm-value">${dateStr}</span></div>
+        <div class="confirm-row"><span class="confirm-label">Time</span><span class="confirm-value">${timeStr}</span></div>
+      `;
+
+      document.getElementById('bookingFormContent').style.display = 'none';
+      document.getElementById('bookingConfirmation').style.display = 'block';
+    }
+
+    function showError(msg) {
+      const errEl = document.getElementById('bf-error');
+      errEl.textContent = msg;
+      errEl.style.display = 'block';
+    }
+
+    function resetBooking() {
+      document.getElementById('bookingFormContent').style.display = 'block';
+      document.getElementById('bookingConfirmation').style.display = 'none';
+      document.getElementById('bf-fname').value = '';
+      document.getElementById('bf-lname').value = '';
+      document.getElementById('bf-phone').value = '';
+      document.getElementById('bf-email').value = '';
+      document.getElementById('bf-service').value = '';
+      document.getElementById('bf-notes').value = '';
+      document.getElementById('bf-error').style.display = 'none';
+      document.getElementById('privateNotice').style.display = 'none';
+      document.getElementById('timeSlotsGroup').style.display = 'none';
+      selectedDate = null;
+      selectedTime = null;
+      initCalendar();
+    }
+  </script>
+</body>
+</html>
