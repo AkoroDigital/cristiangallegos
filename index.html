@@ -748,6 +748,40 @@
     .btn-cancel:hover { background: #e74c3c; color: #fff; }
     .manage-msg { margin-top: 1rem; font-size: .82rem; letter-spacing: .04em; text-align: center; }
 
+    /* ── ADMIN VIEW ── */
+    .admin-overlay {
+      position: fixed; inset: 0; z-index: 300;
+      background: rgba(0,0,0,.78);
+      display: none; align-items: flex-start; justify-content: center;
+      padding: 4rem 1rem; overflow-y: auto;
+    }
+    .admin-overlay.open { display: flex; }
+    .admin-box {
+      background: var(--surface); border: 1px solid var(--border);
+      max-width: 760px; width: 100%; padding: 2.5rem 2rem; position: relative;
+    }
+    .admin-close {
+      position: absolute; top: .8rem; right: 1.1rem;
+      background: none; border: none; color: var(--muted);
+      font-size: 1.7rem; line-height: 1; cursor: pointer;
+    }
+    .admin-login-row { display: flex; gap: .8rem; margin-top: 1.5rem; flex-wrap: wrap; }
+    .admin-login-row .form-input { flex: 1; min-width: 180px; }
+    .admin-booking {
+      border: 1px solid var(--border); padding: 1rem 1.2rem; margin-top: 1rem;
+      display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; align-items: center;
+    }
+    .admin-booking .ab-info { font-size: .92rem; color: var(--text); }
+    .admin-booking .ab-info strong { color: var(--cream); }
+    .admin-booking .ab-meta { color: var(--muted); font-size: .8rem; margin-top: .25rem; }
+    .ab-cancel {
+      background: transparent; color: #e74c3c; border: 1px solid #e74c3c;
+      padding: .55rem 1rem; font-size: .7rem; letter-spacing: .12em; text-transform: uppercase;
+      cursor: pointer; transition: all .2s; font-family: var(--ff-body); white-space: nowrap;
+    }
+    .ab-cancel:hover { background: #e74c3c; color: #fff; }
+    .admin-msg { margin-top: 1.2rem; font-size: .85rem; text-align: center; }
+
     /* ── FOOTER ── */
     footer {
       border-top: 1px solid var(--border);
@@ -1179,9 +1213,14 @@
         <p class="manage-msg" id="mng-msg" style="display:none;"></p>
         <div class="manage-result" id="mng-result">
           <div class="confirm-detail" id="mng-detail" style="margin-top:0;"></div>
+          <input class="form-input" id="mng-phone" type="tel" placeholder="Phone number on the booking" style="margin-top:1rem;" />
           <button class="btn-cancel" onclick="cancelBooking()">Cancel This Appointment</button>
         </div>
       </div>
+
+      <p style="text-align:center; margin-top:1.5rem;">
+        <a onclick="openAdmin()" style="color:var(--muted); font-size:.72rem; letter-spacing:.15em; text-transform:uppercase; cursor:pointer; opacity:.6;">Barber Login</a>
+      </p>
 
     </div>
     <footer>
@@ -1260,6 +1299,21 @@
     </footer>
   </div>
 
+  <!-- ══ ADMIN / BARBER VIEW ══ -->
+  <div class="admin-overlay" id="adminOverlay">
+    <div class="admin-box">
+      <button class="admin-close" onclick="closeAdmin()">&times;</button>
+      <p class="booking-form-title">Upcoming Bookings</p>
+      <p style="color:var(--muted); font-size:.85rem; margin-top:.6rem;">Enter the barber password to view all upcoming appointments.</p>
+      <div class="admin-login-row">
+        <input class="form-input" id="adm-pass" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')adminLoad()" />
+        <button class="form-submit" style="flex:0 0 auto; width:auto; padding:.9rem 1.6rem;" onclick="adminLoad()">View</button>
+      </div>
+      <p class="admin-msg" id="adm-msg" style="display:none;"></p>
+      <div id="adm-list"></div>
+    </div>
+  </div>
+
   <script>
     function showPage(id) {
       document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1332,8 +1386,8 @@
        Until you fill these in, the site falls back to
        per-device localStorage.
        ════════════════════════════════════════════════════ */
-    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+    const SUPABASE_URL = 'https://hwbrxocfecyuuuxgprjj.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh3YnJ4b2NmZWN5dXV1eGdwcmpqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1MTgzNTUsImV4cCI6MjA5NjA5NDM1NX0.pazP_4FPtKEy4Iq2AWLA6ps4F0LNpqXb_zzZEJkIuuU';
     const supaReady = (typeof supabase !== 'undefined') && SUPABASE_URL !== 'YOUR_SUPABASE_URL';
     const supaClient = supaReady ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
@@ -1383,13 +1437,14 @@
       return b || null;
     }
 
-    async function removeBookingRecord(ref) {
+    async function removeBookingRecord(ref, phone) {
       if (supaReady) {
-        const { data, error } = await supaClient.rpc('cancel_booking', { p_ref: ref });
+        const { data, error } = await supaClient.rpc('cancel_booking', { p_ref: ref, p_phone: phone });
         return !error && data === true;
       }
+      const norm = s => (s || '').replace(/\D/g, '');
       const list = loadBookings();
-      const remaining = list.filter(b => b.ref !== ref);
+      const remaining = list.filter(b => !(b.ref === ref && norm(b.phone) === norm(phone)));
       saveBookings(remaining);
       return remaining.length < list.length;
     }
@@ -1400,7 +1455,7 @@
         type: type,
         ref_code: b.ref,
         name: b.fname + ' ' + b.lname,
-        phone: b.phone,
+        phone: b.phone || '—',
         email: b.email || '—',
         service: b.service,
         date: b.dateStr,
@@ -1635,10 +1690,12 @@
 
     async function cancelBooking() {
       if (!lastFoundRef) return;
+      const phone = document.getElementById('mng-phone').value.trim();
+      if (!phone) { showManageMsg('Enter the phone number on your booking to confirm the cancellation.', '#e74c3c'); return; }
       const booking = lastFoundBooking;
-      const ok = await removeBookingRecord(lastFoundRef);
+      const ok = await removeBookingRecord(lastFoundRef, phone);
       if (!ok) {
-        showManageMsg('Could not cancel that booking. Please try again or call the shop.', '#e74c3c');
+        showManageMsg('That phone number doesn\u2019t match this booking, so it was not cancelled. Please check and try again.', '#e74c3c');
         return;
       }
       // Notify Cristian of the cancellation
@@ -1646,6 +1703,7 @@
 
       document.getElementById('mng-result').style.display = 'none';
       document.getElementById('mng-code').value = '';
+      document.getElementById('mng-phone').value = '';
       showManageMsg('Your appointment has been cancelled and the time slot is now open again.', 'var(--gold)');
       lastFoundRef = null;
       lastFoundBooking = null;
@@ -1662,6 +1720,55 @@
       msg.textContent = text;
       msg.style.color = color;
       msg.style.display = 'block';
+    }
+
+    /* ── Admin / barber view ── */
+    function openAdmin() { document.getElementById('adminOverlay').classList.add('open'); }
+    function closeAdmin() {
+      document.getElementById('adminOverlay').classList.remove('open');
+      document.getElementById('adm-pass').value = '';
+      document.getElementById('adm-list').innerHTML = '';
+      document.getElementById('adm-msg').style.display = 'none';
+    }
+    function adminMsg(text, color) {
+      const m = document.getElementById('adm-msg');
+      m.textContent = text; m.style.color = color; m.style.display = 'block';
+    }
+    async function adminLoad() {
+      const pass = document.getElementById('adm-pass').value;
+      const listEl = document.getElementById('adm-list');
+      listEl.innerHTML = '';
+      if (!pass) { adminMsg('Please enter the password.', '#e74c3c'); return; }
+      if (!supaReady) { adminMsg('The booking database is not connected yet.', '#e74c3c'); return; }
+      adminMsg('Loading…', 'var(--muted)');
+      const { data, error } = await supaClient.rpc('list_upcoming_bookings', { p_password: pass });
+      if (error) { adminMsg('Wrong password, or the request was rejected.', '#e74c3c'); return; }
+      if (!data || !data.length) { adminMsg('No upcoming bookings.', 'var(--muted)'); return; }
+      document.getElementById('adm-msg').style.display = 'none';
+      data.forEach(b => {
+        const div = document.createElement('div');
+        div.className = 'admin-booking';
+        const info = document.createElement('div');
+        info.className = 'ab-info';
+        info.innerHTML = `
+          <strong>${b.fname} ${b.lname}</strong> — ${b.service}
+          <div class="ab-meta">${prettyDate(b.appt_date)} · ${b.appt_time}</div>
+          <div class="ab-meta">${b.phone}${b.email ? ' · ' + b.email : ''}</div>
+          ${b.notes ? `<div class="ab-meta">Note: ${b.notes}</div>` : ''}
+          <div class="ab-meta">Ref ${b.ref}</div>`;
+        const btn = document.createElement('button');
+        btn.className = 'ab-cancel';
+        btn.textContent = 'Cancel';
+        btn.onclick = async () => {
+          btn.disabled = true; btn.textContent = 'Cancelling…';
+          const ok = await removeBookingRecord(b.ref, b.phone);
+          if (ok) { div.remove(); }
+          else { btn.disabled = false; btn.textContent = 'Cancel'; adminMsg('Could not cancel that one.', '#e74c3c'); }
+        };
+        div.appendChild(info);
+        div.appendChild(btn);
+        listEl.appendChild(div);
+      });
     }
 
     function showError(msg) {
