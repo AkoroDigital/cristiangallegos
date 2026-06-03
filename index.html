@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Cristian Gallegos Barbershop</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <!-- EmailJS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <!-- Supabase JS client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -699,6 +703,51 @@
       color: var(--cream);
     }
 
+    /* ── REFERENCE CODE + TAKEN SLOTS ── */
+    .confirm-ref {
+      margin-top: 1.8rem;
+      padding: 1.2rem;
+      border: 1px dashed var(--accent);
+      text-align: center;
+    }
+    .confirm-ref .ref-label {
+      font-size: .6rem; letter-spacing: .2em; text-transform: uppercase;
+      color: var(--gold); display: block; margin-bottom: .5rem;
+    }
+    .confirm-ref .ref-code {
+      font-family: var(--ff-head); font-size: 1.9rem; letter-spacing: .25em;
+      color: var(--cream);
+    }
+    .time-slot.taken {
+      opacity: .32; cursor: not-allowed; text-decoration: line-through;
+      pointer-events: none;
+    }
+
+    /* ── MANAGE BOOKING PANEL ── */
+    .manage-panel {
+      max-width: 640px; margin: 3.5rem auto 0;
+      border: 1px solid var(--border);
+      padding: 2.5rem 2rem;
+      background: var(--surface);
+    }
+    .manage-panel .booking-form-title { text-align: center; }
+    .manage-lookup-row { display: flex; gap: .8rem; margin-top: 1.5rem; flex-wrap: wrap; }
+    .manage-lookup-row .form-input { flex: 1; min-width: 180px; }
+    .manage-result {
+      display: none; margin-top: 1.8rem;
+      border: 1px solid var(--border); padding: 1.5rem;
+      flex-direction: column; gap: .8rem;
+    }
+    .btn-cancel {
+      margin-top: 1.5rem; width: 100%;
+      background: transparent; color: #e74c3c;
+      border: 1px solid #e74c3c; padding: .9rem;
+      letter-spacing: .15em; text-transform: uppercase; font-size: .75rem;
+      cursor: pointer; transition: all .25s; font-family: var(--ff-body);
+    }
+    .btn-cancel:hover { background: #e74c3c; color: #fff; }
+    .manage-msg { margin-top: 1rem; font-size: .82rem; letter-spacing: .04em; text-align: center; }
+
     /* ── FOOTER ── */
     footer {
       border-top: 1px solid var(--border);
@@ -1107,11 +1156,33 @@
             <h2>You're Booked!</h2>
             <p>Thanks for reaching out. Cristian will confirm your appointment shortly.</p>
             <div class="confirm-detail" id="confirmDetail"></div>
+            <div class="confirm-ref">
+              <span class="ref-label">Your Booking Reference — save this to cancel later</span>
+              <span class="ref-code" id="confirmRef"></span>
+            </div>
             <button class="form-submit" style="margin: 2rem auto 0; display:block;" onclick="resetBooking()">Book Another Appointment</button>
           </div>
         </div>
 
       </div>
+
+      <!-- MANAGE / CANCEL EXISTING BOOKING -->
+      <div class="manage-panel reveal">
+        <p class="booking-form-title">Check or Cancel a Booking</p>
+        <p style="text-align:center; color:var(--muted); font-size:.85rem; margin-top:.6rem;">
+          Enter the booking reference you received when you booked.
+        </p>
+        <div class="manage-lookup-row">
+          <input class="form-input" id="mng-code" type="text" placeholder="e.g. CG-7F3A" />
+          <button class="form-submit" style="flex:0 0 auto; width:auto; padding:.9rem 1.6rem;" onclick="lookupBooking()">Find</button>
+        </div>
+        <p class="manage-msg" id="mng-msg" style="display:none;"></p>
+        <div class="manage-result" id="mng-result">
+          <div class="confirm-detail" id="mng-detail" style="margin-top:0;"></div>
+          <button class="btn-cancel" onclick="cancelBooking()">Cancel This Appointment</button>
+        </div>
+      </div>
+
     </div>
     <footer>
       <span class="footer-logo">Look Sharp. <em style="font-style:italic; color:var(--accent);">Feel Sharp.</em></span>
@@ -1225,6 +1296,141 @@
       6: { type: 'open', start: 9,  end: 19 },
     };
 
+    /* ════════════════════════════════════════════════════
+       EMAILJS CONFIG  —  replace the three values below
+       (see setup steps). Until you do, the site falls back
+       to opening the visitor's email app instead.
+       ════════════════════════════════════════════════════ */
+    const EMAILJS_PUBLIC_KEY = 'YOUR_PUBLIC_KEY';
+    const EMAILJS_SERVICE_ID = 'YOUR_SERVICE_ID';
+    const EMAILJS_TEMPLATE_ID = 'YOUR_TEMPLATE_ID';
+    const emailjsReady = (typeof emailjs !== 'undefined') && (EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY');
+    if (emailjsReady) { try { emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY }); } catch (e) { console.warn('EmailJS init failed', e); } }
+
+    /* ── Booking storage (per-device, via localStorage) ── */
+    function loadBookings() {
+      try { return JSON.parse(localStorage.getItem('cg_bookings') || '[]'); }
+      catch (e) { return []; }
+    }
+    function saveBookings(list) {
+      try { localStorage.setItem('cg_bookings', JSON.stringify(list)); } catch (e) {}
+    }
+    function makeRefCode() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let s = '';
+      for (let i = 0; i < 4; i++) s += chars[Math.floor(Math.random() * chars.length)];
+      return 'CG-' + s;
+    }
+    function isoDate(d) {
+      return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    }
+
+    /* ════════════════════════════════════════════════════
+       SUPABASE CONFIG  —  replace the two values below.
+       This is the SHARED database that actually prevents
+       double-booking across every visitor and device.
+       Until you fill these in, the site falls back to
+       per-device localStorage.
+       ════════════════════════════════════════════════════ */
+    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+    const supaReady = (typeof supabase !== 'undefined') && SUPABASE_URL !== 'YOUR_SUPABASE_URL';
+    const supaClient = supaReady ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+    function prettyDate(iso) {
+      const [y, m, d] = iso.split('-').map(Number);
+      return new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+    }
+
+    /* ── DATA LAYER: Supabase when configured, else localStorage ── */
+    async function getTakenTimes(dateISO) {
+      if (supaReady) {
+        const { data, error } = await supaClient.rpc('get_taken_slots', { d: dateISO });
+        if (error) { console.warn('get_taken_slots', error); return []; }
+        return (data || []).map(r => r.appt_time);
+      }
+      return loadBookings().filter(b => b.dateISO === dateISO).map(b => b.time);
+    }
+
+    // returns { status: 'ok'|'taken'|'error', ref }
+    async function createBookingRecord(b) {
+      if (supaReady) {
+        const { data, error } = await supaClient.rpc('create_booking', {
+          p_ref: b.ref, p_fname: b.fname, p_lname: b.lname, p_phone: b.phone,
+          p_email: b.email, p_service: b.service, p_date: b.dateISO,
+          p_time: b.time, p_notes: b.notes
+        });
+        if (error) { console.warn('create_booking', error); return { status: 'error' }; }
+        if (data === 'TAKEN') return { status: 'taken' };
+        return { status: 'ok', ref: data };
+      }
+      // localStorage fallback
+      const list = loadBookings();
+      list.push(b);
+      saveBookings(list);
+      return { status: 'ok', ref: b.ref };
+    }
+
+    async function findBookingRecord(ref) {
+      if (supaReady) {
+        const { data, error } = await supaClient.rpc('get_booking', { p_ref: ref });
+        if (error || !data || !data.length) return null;
+        const r = data[0];
+        return { ref: r.ref, fname: r.fname, lname: r.lname, service: r.service,
+                 dateStr: prettyDate(r.appt_date), time: r.appt_time };
+      }
+      const b = loadBookings().find(x => x.ref.toUpperCase() === ref.toUpperCase());
+      return b || null;
+    }
+
+    async function removeBookingRecord(ref) {
+      if (supaReady) {
+        const { data, error } = await supaClient.rpc('cancel_booking', { p_ref: ref });
+        return !error && data === true;
+      }
+      const list = loadBookings();
+      const remaining = list.filter(b => b.ref !== ref);
+      saveBookings(remaining);
+      return remaining.length < list.length;
+    }
+
+    /* ── Send a booking/cancellation email (EmailJS, or mailto fallback) ── */
+    function sendBookingEmail(type, b) {
+      const params = {
+        type: type,
+        ref_code: b.ref,
+        name: b.fname + ' ' + b.lname,
+        phone: b.phone,
+        email: b.email || '—',
+        service: b.service,
+        date: b.dateStr,
+        time: b.time,
+        notes: b.notes || '—',
+        to_email: BOOKING_EMAIL
+      };
+      if (emailjsReady) {
+        return emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params)
+          .catch(err => { console.warn('EmailJS send failed', err); });
+      }
+      // Fallback: open the visitor's mail app
+      const subject = `${type} — ${params.name} (${b.service}) [${b.ref}]`;
+      const body = [
+        `${type} from the website:`, '',
+        `Reference: ${b.ref}`,
+        `Name:    ${params.name}`,
+        `Phone:   ${b.phone}`,
+        `Email:   ${params.email}`,
+        `Service: ${b.service}`,
+        `Date:    ${b.dateStr}`,
+        `Time:    ${b.time}`,
+        `Notes:   ${params.notes}`
+      ].join('\n');
+      window.location.href = 'mailto:' + BOOKING_EMAIL
+        + '?subject=' + encodeURIComponent(subject)
+        + '&body=' + encodeURIComponent(body);
+      return Promise.resolve();
+    }
+
     let calYear, calMonth, selectedDate = null, selectedTime = null;
 
     function initCalendar() {
@@ -1291,27 +1497,39 @@
       }
     }
 
-    function renderTimeSlots(startHour, endHour) {
+    async function renderTimeSlots(startHour, endHour) {
       const container = document.getElementById('timeSlots');
       const note = document.getElementById('timeSlotNote');
       container.innerHTML = '';
       selectedTime = null;
+      const dateISO = isoDate(selectedDate);
+      note.textContent = 'Checking availability…';
+      const takenList = await getTakenTimes(dateISO);
+      // Guard against the user having switched dates while we were loading
+      if (isoDate(selectedDate) !== dateISO) return;
+      const taken = new Set(takenList);
+      let freeCount = 0;
       for (let h = startHour; h < endHour; h++) {
         for (let m = 0; m < 60; m += 30) {
           const label = formatTime(h, m);
           const btn = document.createElement('button');
           btn.className = 'time-slot';
           btn.textContent = label;
-          btn.addEventListener('click', () => {
-            document.querySelectorAll('.time-slot').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-            selectedTime = label;
-          });
+          if (taken.has(label)) {
+            btn.classList.add('taken');
+            btn.title = 'Already booked';
+          } else {
+            freeCount++;
+            btn.addEventListener('click', () => {
+              document.querySelectorAll('.time-slot').forEach(b => b.classList.remove('selected'));
+              btn.classList.add('selected');
+              selectedTime = label;
+            });
+          }
           container.appendChild(btn);
         }
       }
-      const totalSlots = (endHour - startHour) * 2;
-      note.textContent = `${totalSlots} slots available · Each appointment is approximately 30 minutes`;
+      note.textContent = `${freeCount} slot${freeCount === 1 ? '' : 's'} available · Each appointment is approximately 30 minutes`;
     }
 
     function formatTime(h, m) {
@@ -1322,7 +1540,10 @@
 
     const BOOKING_EMAIL = 'crisgallegosbarber@gmail.com';
 
-    function submitBooking() {
+    let lastFoundRef = null;
+    let lastFoundBooking = null;
+
+    async function submitBooking() {
       const fname = document.getElementById('bf-fname').value.trim();
       const lname = document.getElementById('bf-lname').value.trim();
       const phone = document.getElementById('bf-phone').value.trim();
@@ -1330,6 +1551,7 @@
       const service = document.getElementById('bf-service').value;
       const notes = document.getElementById('bf-notes').value.trim();
       const errEl = document.getElementById('bf-error');
+      const submitBtn = document.querySelector('#bookingFormContent .form-submit');
       errEl.style.display = 'none';
       if (!fname) { showError('Please enter your first name.'); return; }
       if (!lname) { showError('Please enter your last name.'); return; }
@@ -1338,37 +1560,108 @@
       if (!selectedDate) { showError('Please select a date.'); return; }
       const sched = SCHEDULE[selectedDate.getDay()];
       if (sched.type === 'open' && !selectedTime) { showError('Please select a time slot.'); return; }
+
+      const dateISO = isoDate(selectedDate);
       const dateStr = selectedDate.toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
       const timeStr = selectedTime || 'Private appointment — Cristian will confirm your time';
-      const detail = document.getElementById('confirmDetail');
-      detail.innerHTML = `
+      const ref = makeRefCode();
+      const booking = { ref, fname, lname, phone, email, service, dateISO, dateStr, time: timeStr, notes, createdAt: Date.now() };
+
+      submitBtn.disabled = true;
+      const originalLabel = submitBtn.textContent;
+      submitBtn.textContent = 'Booking…';
+
+      const res = await createBookingRecord(booking);
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalLabel;
+
+      if (res.status === 'taken') {
+        showError('Sorry, that time was just booked by someone else. Please pick another slot.');
+        renderTimeSlots(sched.start, sched.end);
+        return;
+      }
+      if (res.status === 'error') {
+        showError('Something went wrong saving your booking. Please try again, or call the shop.');
+        return;
+      }
+
+      // Notify Cristian (independent of where the booking is stored)
+      sendBookingEmail('New Booking', booking);
+
+      document.getElementById('confirmDetail').innerHTML = `
         <div class="confirm-row"><span class="confirm-label">Name</span><span class="confirm-value">${fname} ${lname}</span></div>
         <div class="confirm-row"><span class="confirm-label">Phone</span><span class="confirm-value">${phone}</span></div>
         <div class="confirm-row"><span class="confirm-label">Service</span><span class="confirm-value">${service}</span></div>
         <div class="confirm-row"><span class="confirm-label">Date</span><span class="confirm-value">${dateStr}</span></div>
         <div class="confirm-row"><span class="confirm-label">Time</span><span class="confirm-value">${timeStr}</span></div>
       `;
-
-      // Send the booking details to Cristian's inbox
-      const subject = `New Booking Request — ${fname} ${lname} (${service})`;
-      const lines = [
-        'New appointment request from the website:',
-        '',
-        `Name:    ${fname} ${lname}`,
-        `Phone:   ${phone}`,
-        `Email:   ${email || '—'}`,
-        `Service: ${service}`,
-        `Date:    ${dateStr}`,
-        `Time:    ${timeStr}`,
-        `Notes:   ${notes || '—'}`
-      ];
-      const mailto = 'mailto:' + BOOKING_EMAIL
-        + '?subject=' + encodeURIComponent(subject)
-        + '&body=' + encodeURIComponent(lines.join('\n'));
-      window.location.href = mailto;
-
+      document.getElementById('confirmRef').textContent = ref;
       document.getElementById('bookingFormContent').style.display = 'none';
       document.getElementById('bookingConfirmation').style.display = 'block';
+    }
+
+    /* ── Manage / cancel an existing booking ── */
+    async function lookupBooking() {
+      const code = document.getElementById('mng-code').value.trim().toUpperCase();
+      const result = document.getElementById('mng-result');
+      document.getElementById('mng-msg').style.display = 'none';
+      result.style.display = 'none';
+      lastFoundRef = null;
+      lastFoundBooking = null;
+      if (!code) { showManageMsg('Please enter your booking reference.', '#e74c3c'); return; }
+      showManageMsg('Looking up…', 'var(--muted)');
+
+      const booking = await findBookingRecord(code);
+      if (!booking) {
+        const note = supaReady
+          ? 'No booking found with that reference. Double-check the code from your confirmation.'
+          : 'No booking found with that reference on this device. Bookings can only be managed from the same phone or computer used to book.';
+        showManageMsg(note, '#e74c3c');
+        return;
+      }
+      document.getElementById('mng-msg').style.display = 'none';
+      lastFoundRef = booking.ref;
+      lastFoundBooking = booking;
+      document.getElementById('mng-detail').innerHTML = `
+        <div class="confirm-row"><span class="confirm-label">Ref</span><span class="confirm-value">${booking.ref}</span></div>
+        <div class="confirm-row"><span class="confirm-label">Name</span><span class="confirm-value">${booking.fname} ${booking.lname}</span></div>
+        <div class="confirm-row"><span class="confirm-label">Service</span><span class="confirm-value">${booking.service}</span></div>
+        <div class="confirm-row"><span class="confirm-label">Date</span><span class="confirm-value">${booking.dateStr}</span></div>
+        <div class="confirm-row"><span class="confirm-label">Time</span><span class="confirm-value">${booking.time}</span></div>
+      `;
+      result.style.display = 'flex';
+    }
+
+    async function cancelBooking() {
+      if (!lastFoundRef) return;
+      const booking = lastFoundBooking;
+      const ok = await removeBookingRecord(lastFoundRef);
+      if (!ok) {
+        showManageMsg('Could not cancel that booking. Please try again or call the shop.', '#e74c3c');
+        return;
+      }
+      // Notify Cristian of the cancellation
+      if (booking) sendBookingEmail('Cancellation', booking);
+
+      document.getElementById('mng-result').style.display = 'none';
+      document.getElementById('mng-code').value = '';
+      showManageMsg('Your appointment has been cancelled and the time slot is now open again.', 'var(--gold)');
+      lastFoundRef = null;
+      lastFoundBooking = null;
+
+      // Refresh calendar so the freed slot reappears if it's showing
+      if (selectedDate) {
+        const s = SCHEDULE[selectedDate.getDay()];
+        if (s.type === 'open') renderTimeSlots(s.start, s.end);
+      }
+    }
+
+    function showManageMsg(text, color) {
+      const msg = document.getElementById('mng-msg');
+      msg.textContent = text;
+      msg.style.color = color;
+      msg.style.display = 'block';
     }
 
     function showError(msg) {
