@@ -1151,7 +1151,7 @@
             <div class="contact-info-icon">✉</div>
             <div class="contact-info-content">
               <p class="contact-info-label">Email</p>
-              <p class="contact-info-value"><a href="mailto:crisgallegosbarber@gmail.com">book@cristiangallegos.com</a></p>
+              <p class="contact-info-value"><a href="mailto:crisgallegosbarber@gmail.com">crisgallegosbarber@gmail.com</a></p>
             </div>
           </div>
 
@@ -1320,11 +1320,15 @@
       return `${disp}:${m === 0 ? '00' : m} ${suffix}`;
     }
 
+    const BOOKING_EMAIL = 'crisgallegosbarber@gmail.com';
+
     function submitBooking() {
       const fname = document.getElementById('bf-fname').value.trim();
       const lname = document.getElementById('bf-lname').value.trim();
       const phone = document.getElementById('bf-phone').value.trim();
+      const email = document.getElementById('bf-email').value.trim();
       const service = document.getElementById('bf-service').value;
+      const notes = document.getElementById('bf-notes').value.trim();
       const errEl = document.getElementById('bf-error');
       errEl.style.display = 'none';
       if (!fname) { showError('Please enter your first name.'); return; }
@@ -1344,6 +1348,25 @@
         <div class="confirm-row"><span class="confirm-label">Date</span><span class="confirm-value">${dateStr}</span></div>
         <div class="confirm-row"><span class="confirm-label">Time</span><span class="confirm-value">${timeStr}</span></div>
       `;
+
+      // Send the booking details to Cristian's inbox
+      const subject = `New Booking Request — ${fname} ${lname} (${service})`;
+      const lines = [
+        'New appointment request from the website:',
+        '',
+        `Name:    ${fname} ${lname}`,
+        `Phone:   ${phone}`,
+        `Email:   ${email || '—'}`,
+        `Service: ${service}`,
+        `Date:    ${dateStr}`,
+        `Time:    ${timeStr}`,
+        `Notes:   ${notes || '—'}`
+      ];
+      const mailto = 'mailto:' + BOOKING_EMAIL
+        + '?subject=' + encodeURIComponent(subject)
+        + '&body=' + encodeURIComponent(lines.join('\n'));
+      window.location.href = mailto;
+
       document.getElementById('bookingFormContent').style.display = 'none';
       document.getElementById('bookingConfirmation').style.display = 'block';
     }
